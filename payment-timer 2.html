@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Reminder - Mrs. Lina Dela Cerna</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f8f9fa;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #1a1a1a;
+      padding: 20px;
+    }
+    .container {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 24px;
+      padding: 40px 30px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #e94560;
+    }
+    .greeting {
+      font-size: 1.25rem;
+      margin: 16px 0 8px;
+      font-weight: 500;
+    }
+    .name {
+      color: #c41e3a;
+      font-weight: 700;
+    }
+    .message {
+      font-size: 1rem;
+      line-height: 1.5;
+      margin: 16px 0 24px;
+      color: #4b5563;
+    }
+    .countdown-box {
+      background: #fff5f5;
+      border: 2px solid #e94560;
+      border-radius: 16px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+    .countdown {
+      font-size: 4.5rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #e94560;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .countdown.expired {
+      font-size: 2.8rem;
+      color: #ff4757;
+    }
+    .label {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-top: 8px;
+      color: #6b7280;
+    }
+    .warning {
+      background: #fff5f5;
+      border-left: 4px solid #ff4757;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 0.95rem;
+      text-align: left;
+      color: #374151;
+    }
+    .expired-banner {
+      display: none;
+      background: #ff4757;
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+    .footer {
+      margin-top: 24px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚠️ Payment Deadline</h1>
+    <p class="greeting">Dear <span class="name">Mrs. Lina Dela Cerna</span>,</p>
+    <p class="message">
+      You have a limited time to complete your payment. Please make the payment before the countdown reaches zero.
+    </p>
+    
+    <div class="countdown-box">
+      <div id="countdown" class="countdown">55:00</div>
+      <div class="label">Time Remaining</div>
+    </div>
+    
+    <div class="warning">
+      <strong>Important:</strong> If you do not pay before this time expires, the payments will be canceled.
+    </div>
+    
+    <div id="expiredBanner" class="expired-banner">
+      ⛔ EXPIRED<br>
+      <span style="font-size: 1rem; font-weight: 400;">Payments have been canceled</span>
+    </div>
+    
+    <div class="footer">
+      This timer continues even if you refresh or close the page.
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'mrs_lina_dela_cerna_payment_deadline_v1';
+    const DURATION_MS = 55 * 60 * 1000; // 55 minutes
+
+    function getOrCreateDeadline() {
+      let stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) {
+        const deadline = Date.now() + DURATION_MS;
+        localStorage.setItem(STORAGE_KEY, deadline.toString());
+        return deadline;
+      }
+      return parseInt(stored, 10);
+    }
+
+    const deadline = getOrCreateDeadline();
+    const countdownEl = document.getElementById('countdown');
+    const expiredBanner = document.getElementById('expiredBanner');
+    const labelEl = document.querySelector('.label');
+
+    function formatTime(ms) {
+      if (ms <= 0) return '00:00';
+      const totalSeconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function updateCountdown() {
+      const now = Date.now();
+      const remaining = deadline - now;
+
+      if (remaining <= 0) {
+        countdownEl.textContent = 'EXPIRED';
+        countdownEl.classList.add('expired');
+        labelEl.textContent = 'Status';
+        expiredBanner.style.display = 'block';
+        clearInterval(timer);
+        return;
+      }
+
+      countdownEl.textContent = formatTime(remaining);
+    }
+
+    // Update immediately and then every second
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+
+    // Also update on visibility change (when tab becomes active again)
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) updateCountdown();
+    });
+  </script>
+</body>
+</html>
